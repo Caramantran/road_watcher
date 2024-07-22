@@ -1,0 +1,22 @@
+name: yolov8_env
+channels:
+  - conda-forge
+  - defaults
+  - pytorch
+dependencies:
+  - python=3.10
+  - numpy
+  - pandas
+  - scikit-image
+  - lap
+  - filterpy
+  - opencv
+  - matplotlib
+  - pytorch
+  - torchvision
+  - torchaudio
+  - cpuonly
+  - yt-dlp
+  - pip
+  - pip:
+    - ultralytics

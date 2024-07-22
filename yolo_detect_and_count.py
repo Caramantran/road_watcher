@@ -5,17 +5,13 @@ import pandas as pd
 from datetime import datetime
 from collections import defaultdict
 from ultralytics import YOLO
-import yt_dlp
 import time
 import logging
-import urllib.request
 import os
 from concurrent.futures import ThreadPoolExecutor
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-
 
 class YOLOv8_ObjectDetector:
     def __init__(self, model_file='yolov8m.pt', labels=None, classes=None, conf=0.25, iou=0.45):
@@ -99,6 +95,11 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
                         if results is None or resultsTracker is None:
                             continue
 
+                # Afficher la vidéo
+                cv2.imshow('YOLOv8 Object Detection', frame)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+
                 if frame_count % (update_interval * fps) == 0:
                     self.save_count_to_csv(output_file_path)
 
@@ -110,6 +111,7 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
                 continue
 
         cap.release()
+        cv2.destroyAllWindows()
         self.save_count_to_csv(output_file_path)
         logging.info(f"Total processing time: {time.time() - start_time} seconds")
 
@@ -145,25 +147,17 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
             for cls, ids in class_counts.items():
                 logging.info(f'  Class {self.labels[cls]}: {len(ids)} objects')
 
-def get_youtube_stream_url(youtube_url):
-    ydl_opts = {'format': 'best'}
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(youtube_url, download=False)
-        return info['url']
-
 # Example usage
 if __name__ == '__main__':
     from datetime import datetime
     import os
 
-  
-
-    youtube_url = 'https://www.youtube.com/live/1fiF7B6VkCk?si=IK09UXRxvUqT9XV-'
-    stream_url = get_youtube_stream_url(youtube_url)
+    # Use the first camera device (index 0) as the video source
+    video_source = 0
 
     counter = YOLOv8_ObjectCounter(model_file='yolov8m.pt', conf=0.60, iou=0.60)
 
     current_date = datetime.now().strftime('%Y-%m-%d')
-    output_file_path = f'/content/test-{current_date}.csv'
+    output_file_path = f'C:/Users/v/road_watcher/test-{current_date}.csv'
 
-    counter.predict_video(stream_url, output_file_path, frame_skip=5, update_interval=2)
+    counter.predict_video(video_source, output_file_path, frame_skip=5, update_interval=2)

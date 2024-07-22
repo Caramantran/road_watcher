@@ -169,3 +169,6 @@ test*/
 
 # Ignore "GIFS" folder
 GIFS/
+
+env/
+test*
