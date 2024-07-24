@@ -60,6 +60,26 @@ Road Watcher utilizes state-of-the-art YOLOv8 object detection models integrated
    ```bash
    python main.py
 
+### Set-up Docker image
+
+1. **Update .env file**:
+   ```bash
+   CAM_IP=8.8.8.8
+   CAM_USER=admin
+   CAM_PASSWORD=password
+   STORAGE_VOLUME_PATH=/path/to/storage/volume
+
+2. **Build Docker image**:
+
+   ```bash
+   docker build -t road_watcher:<tag> .
+ 
+ 
+3. **Run Docker Image**:
+
+   ```bash
+   docker run --env-file .env road_watcher:<tag>
+
 ## Usage
 1. **Configure the Camera**:
 Update the IP address, username, and password of your Hikvision camera in the main.py file.
