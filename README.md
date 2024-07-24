@@ -45,7 +45,7 @@ Road Watcher utilizes state-of-the-art YOLOv8 object detection models integrated
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yourusername/road-watcher.git
+   git clone https://github.com/Caramantran/road-watcher.git
    cd road-watcher
 
 2. **Create and Activate the Environment**:
@@ -68,6 +68,7 @@ Road Watcher utilizes state-of-the-art YOLOv8 object detection models integrated
    CAM_USER=admin
    CAM_PASSWORD=password
    STORAGE_VOLUME_PATH=/path/to/storage/volume
+   CAMERA_NAME=DUMMY_NAME
 
 2. **Build Docker image**:
 

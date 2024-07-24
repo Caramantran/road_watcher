@@ -13,6 +13,7 @@ load_dotenv()
 cam_ip = os.getenv('CAM_IP')
 cam_user = os.getenv('CAM_USER')
 cam_password = os.getenv('CAM_PASSWORD')
+cam_name = os.getenv('CAM_NAME')
 
 # Fetch the storage volume path from environment variables
 storage_volume_path = os.getenv('STORAGE_VOLUME_PATH')
@@ -25,6 +26,6 @@ if __name__ == '__main__':
     counter = YOLOv8_ObjectCounter(model_file='yolov8m.pt', conf=0.60, iou=0.60)
 
     current_date = datetime.now().strftime('%Y-%m-%d')
-    output_file_path = os.path.join(storage_volume_path, f'test-{current_date}.csv')
+    output_file_path = os.path.join(storage_volume_path, f'{cam_name}-{current_date}.csv')
 
     counter.predict_video(cam, output_file_path, frame_skip=5, update_interval=2)
