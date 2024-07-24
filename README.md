@@ -1,52 +1,97 @@
-# Object-tracking-and-counting-using-YOLOV8
+# Road Watcher - Intelligent Traffic Monitoring System
 
-This repository contains the code for object detection, tracking, and counting using the YOLOv8 algorithm by ultralytics for object detection and the SORT (Simple Online and Realtime Tracking) algorithm for object tracking. The project provides code for both procedural and object-oriented programming implementations in Python.  
+Welcome to **Road Watcher**, the intelligent solution for real-time traffic monitoring and analysis using advanced object detection and counting techniques. This system leverages cutting-edge AI technology to provide accurate and actionable insights for urban traffic management.
 
-The OOP implementation is designed to be easily maintainable and customizable so that it can be further used for custom object detection, tracking, and counting.
+## Overview
 
-For more details check the ultralytics YOLOv8 Github [repository](https://github.com/ultralytics/ultralytics) and the YOLOv8 python [documentation](https://docs.ultralytics.com/usage/python/#train).
+Road Watcher utilizes state-of-the-art YOLOv8 object detection models integrated with Hikvision cameras to monitor traffic in real-time. This powerful combination allows for seamless detection, tracking, and counting of vehicles, providing invaluable data for improving traffic flow, enhancing safety, and optimizing infrastructure planning.
 
-### Features:
+## Key Features
 
-* **Object detection**: The YOLOv8 algorithm has been used to detect objects in images and videos. The algorithm is known for its fast and accurate performance.
-* **Object tracking**: The SORT algorithm has been used for tracking the detected objects in real-time. SORT is a simple algorithm that performs well in real-time tracking scenarios.
-* **Object counting**: The project also includes a module for counting the number of objects detected in a given image or video.
-* **OOP approach**: The project has been implemented using object-oriented programming principles, making it modular and easy to understand.
+### Real-Time Traffic Monitoring
+- **Continuous Surveillance**: Monitor traffic 24/7 using high-definition Hikvision cameras.
+### Advanced Object Detection
+- **Accurate Vehicle Detection**: Identify and count various types of vehicles including cars, trucks, motorcycles, and buses with high precision.
+- **Dynamic Tracking**: Track vehicle movement across multiple frames for detailed traffic analysis.
 
+### Comprehensive Data Analytics
+- **Detailed Reports**: Generate comprehensive reports on traffic density, vehicle types, and peak hours.
 
-## Navigating this repository
+### Integration and Flexibility
+- **Seamless Integration**: Easily integrate with existing traffic management systems and city infrastructure.
+- **Scalable Solution**: Expand monitoring capabilities to cover more areas as needed.
 
-### Code files
+## Business Benefits
 
-* [YOLOv8_Object_Detection_procedural.ipynb](https://github.com/mohamedamine99/Object-tracking-and-counting-using-YOLOV8/blob/main/YOLOv8_Object_Detection_procedural.ipynb) : The notebook provides code for object detection using YOLOv8, including different variants with different architectures and trade-offs between speed and accuracy. The code follows a procedural approach rather than object-oriented programming to make it simpler and easier to understand for beginners.
+### Enhance Traffic Management
+- **Reduce Congestion**: Optimize traffic light timings and road usage to minimize traffic jams.
+- **Improve Safety**: Detect and respond to traffic incidents quickly, reducing the risk of accidents.
 
-* [YOLOv8_Object_Detection_OOP.ipynb](https://github.com/mohamedamine99/Object-tracking-and-counting-using-YOLOV8/blob/main/YOLOv8_Object_Detection_OOP.ipynb) : This notebook provides code for object detection using YOLOv8, including different variants with different architectures and trade-offs between speed and accuracy. The code follows an object-oriented approach rather than procedural programming to make it easier to understand, modify and maintain.
+### Optimize Infrastructure Planning
+- **Data-Driven Decisions**: Use accurate traffic data to plan new roads, expand existing ones, and improve public transportation routes.
+- **Resource Allocation**: Allocate resources more effectively based on real-time traffic data and trends.
 
-* [YOLOv8_Object_Counter_OOP.ipynb](https://github.com/mohamedamine99/Object-tracking-and-counting-using-YOLOV8/blob/main/YOLOv8_Object_Counter_OOP.ipynb) : This notebook provides code for object detection, tracking and counting also using different YOLOv8 variants and an object-oriented approach.
+### Boost Operational Efficiency
+- **Automated Monitoring**: Eliminate the need for manual traffic counting and monitoring, freeing up resources for other tasks.
+- **Real-Time Insights**: Gain immediate access to traffic data, enabling quick decision-making and response.
 
-* [YOLOv8_Object_Counter_OOP_v2.ipynb](https://github.com/mohamedamine99/Object-tracking-and-counting-using-YOLOV8/blob/main/YOLOv8_Object_Counter_OOP_v2.ipynb) :This notebook provides code for object detection, tracking and counting also using different YOLOv8 variants and an object-oriented approach but the difference from [YOLOv8_Object_Counter_OOP.ipynb](https://github.com/mohamedamine99/Object-tracking-and-counting-using-YOLOV8/blob/main/YOLOv8_Object_Counter_OOP.ipynb) is that the classes are imported as an external script named [yolo_detect_and_count.py](https://github.com/mohamedamine99/Object-tracking-and-counting-using-YOLOV8/blob/main/yolo_detect_and_count.py) in order to avoid defining the classes inside the notebook and make it less cluttered with lines of code.
+## Getting Started
 
-* [yolo_detect_and_count.py](https://github.com/mohamedamine99/Object-tracking-and-counting-using-YOLOV8/blob/main/yolo_detect_and_count.py) : a python script that contains well-documented definitions for the `YOLOv8_ObjectDetector` and `YOLOv8_ObjectCounter` classes used respectively for detecting and counting objects.
+### Prerequisites
+- **Hikvision Camera**: Ensure you have a Hikvision camera set up and connected to your network.
+- **Conda**: Install Conda to manage the project environment.
 
+### Installation
 
-* [sort.py](https://github.com/mohamedamine99/Object-tracking-and-counting-using-YOLOV8/blob/main/sort.py) : a python module for object tracking using the SORT algorithm (SORT : Simple Online and Realtime Tracking) 
-  * This script is a slightly modified version from the [original sort module](https://github.com/abewley/sort) by [abewley](https://github.com/abewley) , with some imports removed in order to fix some compatibility issues regarding pytorch and matplotlib backends.
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/yourusername/road-watcher.git
+   cd road-watcher
 
+2. **Create and Activate the Environment**:
 
-### Results directories
+   ```bash
+   conda env create -f environment.yml
+   conda activate yolo_hikvision_env
+ 
+ 
+3. **Run the Main Script**:
 
-* [results - Object Counting](https://github.com/mohamedamine99/Object-tracking-and-counting-using-YOLOV8/tree/main/results%20-%20Object%20Counting) : This directory contains the video results for object counting in the following format : [yolo variant]--[original video name].avi
+   ```bash
+   python main.py
 
-* [GIFs](https://github.com/mohamedamine99/Object-tracking-and-counting-using-YOLOV8/tree/main/GIFs) : contains results for object detection and object counting on videos in GIF format.
+## Usage
+1. **Configure the Camera**:
+Update the IP address, username, and password of your Hikvision camera in the main.py file.
 
-* [results - custom display](https://github.com/mohamedamine99/Object-tracking-and-counting-using-YOLOV8/tree/main/results%20-%20custom%20display) : This directory contains both video and image results for object detection using the custom display. The reason for this custom display is that it provides a simple alternative to the YOLOv8 native display which can sometimes be cumbersome. 
+2. **Start Monitoring**:
+Run the main script to start real-time traffic monitoring and data collection.
 
-* [results - default display](https://github.com/mohamedamine99/Object-tracking-and-counting-using-YOLOV8/tree/main/results%20-%20custom%20display) : This directory contains both video and image results for object detection using YOLOv8 default display. 
+3. **Access Reports**:
+Reports are generated in CSV format and saved in the specified directory. Use these reports for further analysis and decision-making.
 
-* [test vids](https://github.com/mohamedamine99/Object-tracking-and-counting-using-YOLOV8/tree/main/test%20vids) : a directory that contains all testing videos.
-* [test imgs](https://github.com/mohamedamine99/Object-tracking-and-counting-using-YOLOV8/tree/main/test%20imgs) : a directory that contains all testing images.
+## Project Structure
 
-### Other files
+**modules/:** Contains the core modules for camera integration, object detection, and data processing.
 
-* [requirements.txt](https://github.com/mohamedamine99/Object-tracking-and-counting-using-YOLOV8/blob/main/requirements.txt) : Contains the modules required by the sort module
-* [coco.names](https://github.com/mohamedamine99/Object-tracking-and-counting-using-YOLOV8/blob/main/coco.names) : Contains the labels of the 80 default classes for the COCO dataset.
+**notebooks/:** Jupyter notebooks for development and testing.
+
+**env/:** Conda environment files.
+
+**yolov8m.pt:** Pre-trained YOLOv8 model file.
+
+**coco.names:** List of object names used by the YOLO model.
+
+**Dockerfile:** Docker configuration for containerized deployment.
+
+**environment.yml:** Conda environment configuration file.
+
+**main.py:** Entry point of the application.
+
+**README.md:** Project documentation.
+
+## Contributing
+We welcome contributions to enhance the capabilities and features of Road Watcher. Please feel free to submit pull requests or report issues.
+
+## License
+This project is licensed under the MIT License.
