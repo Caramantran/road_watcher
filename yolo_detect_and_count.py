@@ -9,6 +9,7 @@ import time
 import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
+from hikvisionapi import Client
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -41,13 +42,17 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
         self.track_iou_threshold = track_iou_threshold
         self.class_counts = defaultdict(lambda: defaultdict(set))
 
-    def predict_video(self, video_source, output_file_path, frame_skip=5, update_interval=10, verbose=True):
-        cap = cv2.VideoCapture(video_source)
-        if not cap.isOpened():
-            logging.error("Error opening video stream or file")
-            return
+    def get_hikvision_frame(self, cam):
+        response = cam.Streaming.channels[101].picture(method='get', type='opaque_data')
+        img_data = b''
+        for chunk in response.iter_content(chunk_size=1024):
+            if chunk:
+                img_data += chunk
+        np_arr = np.frombuffer(img_data, np.uint8)
+        frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+        return frame
 
-        fps = cap.get(cv2.CAP_PROP_FPS)
+    def predict_video(self, cam, output_file_path, frame_skip=5, update_interval=10, verbose=True):
         frame_count = 0
         tracker = sort.Sort(max_age=self.track_max_age, min_hits=self.track_min_hits, iou_threshold=self.track_iou_threshold)
         totalCount = set()
@@ -78,10 +83,10 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
                             self.class_counts[hour][int(box.cls.item())].add(id)
             return results, resultsTracker
 
-        while cap.isOpened():
+        while True:
             try:
-                ret, frame = cap.read()
-                if not ret:
+                frame = self.get_hikvision_frame(cam)
+                if frame is None:
                     logging.warning("Failed to capture frame. Retrying...")
                     time.sleep(1)
                     continue
@@ -110,7 +115,6 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
                 time.sleep(1)
                 continue
 
-        cap.release()
         cv2.destroyAllWindows()
         self.save_count_to_csv(output_file_path)
         logging.info(f"Total processing time: {time.time() - start_time} seconds")
@@ -152,12 +156,15 @@ if __name__ == '__main__':
     from datetime import datetime
     import os
 
-    # Use the first camera device (index 0) as the video source
-    video_source = 0
+    # Set up the Hikvision camera client
+    cam_ip = 'http://192.168.0.2'  # Replace with your camera IP address
+    cam_user = 'admin'  # Replace with your camera username
+    cam_password = 'admin'  # Replace with your camera password
+    cam = Client(cam_ip, cam_user, cam_password)
 
     counter = YOLOv8_ObjectCounter(model_file='yolov8m.pt', conf=0.60, iou=0.60)
 
     current_date = datetime.now().strftime('%Y-%m-%d')
     output_file_path = f'C:/Users/v/road_watcher/test-{current_date}.csv'
 
-    counter.predict_video(video_source, output_file_path, frame_skip=5, update_interval=2)
+    counter.predict_video(cam, output_file_path, frame_skip=5, update_interval=2)

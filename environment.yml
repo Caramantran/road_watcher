@@ -17,7 +17,10 @@ dependencies:
   - torchvision
   - torchaudio
   - cpuonly
-  - yt-dlp
   - pip
   - pip:
     - ultralytics
+    - sort
+    - hikvisionapi
+    - logging
+
