@@ -1,4 +1,4 @@
-name: yolov8_env
+name: yolo_env
 channels:
   - conda-forge
   - defaults
@@ -13,8 +13,8 @@ dependencies:
   - filterpy
   - opencv
   - matplotlib
-  - pytorch
-  - torchvision
-  - torchaudio
+  - pytorch=2.0
+  - torchvision=0.15
+  - torchaudio=2.0
   - cpuonly
   - pip

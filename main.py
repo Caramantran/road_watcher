@@ -18,6 +18,10 @@ cam_name = os.getenv('CAM_NAME')
 # Fetch the storage volume path from environment variables
 storage_volume_path = os.getenv('STORAGE_VOLUME_PATH')
 
+# Ensure the storage directory exists
+if not os.path.exists(storage_volume_path):
+    os.makedirs(storage_volume_path)
+
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 

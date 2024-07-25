@@ -83,7 +83,7 @@ Road Watcher utilizes state-of-the-art YOLOv8 object detection models integrated
 
 ## Usage
 1. **Configure the Camera**:
-Update the IP address, username, and password of your Hikvision camera in the main.py file.
+Update the IP address, username, and password of your Hikvision camera in the .env file.
 
 2. **Start Monitoring**:
 Run the main script to start real-time traffic monitoring and data collection.
@@ -95,11 +95,11 @@ Reports are generated in CSV format and saved in the specified directory. Use th
 
 **modules/:** Contains the core modules for camera integration, object detection, and data processing.
 
+**modules/yolov8m.pt:** Pre-trained YOLOv8 model file.
+
 **notebooks/:** Jupyter notebooks for development and testing.
 
 **env/:** Conda environment files.
-
-**yolov8m.pt:** Pre-trained YOLOv8 model file.
 
 **coco.names:** List of object names used by the YOLO model.
 

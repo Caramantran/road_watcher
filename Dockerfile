@@ -24,10 +24,10 @@ COPY environment.yml .
 RUN conda env create -f environment.yml
 
 # Activate the environment for subsequent commands
-SHELL ["conda", "run", "-n", "yolov8_env", "/bin/bash", "-c"]
+SHELL ["conda", "run", "-n", "yolo_env", "/bin/bash", "-c"]
 
 # Install additional pip packages separately to handle any issues
-RUN conda run -n yolov8_env pip install ultralytics hikvisionapi python-dotenv
+RUN conda run -n yolo_env pip install ultralytics hikvisionapi python-dotenv
 
 # Copy the rest of your application code into the container
 COPY . .
@@ -36,4 +36,4 @@ COPY . .
 COPY .env .
 
 # Ensure the conda environment is active when running the application
-ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "yolov8_env", "python", "main.py"]
+ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "yolo_env", "python", "main.py"]
