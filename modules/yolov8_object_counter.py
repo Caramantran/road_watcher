@@ -66,9 +66,9 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
                             continue
 
                 # Display the video
-                cv2.imshow('YOLOv8 Object Detection', frame)
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
+                #cv2.imshow('YOLOv8 Object Detection', frame)
+                #if cv2.waitKey(1) & 0xFF == ord('q'):
+                 #   break
 
                 if frame_count % (update_interval * 30) == 0:  # Assuming 30 FPS
                     self.save_count_to_csv(output_file_path)
@@ -80,7 +80,7 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
                 time.sleep(1)
                 continue
 
-        cv2.destroyAllWindows()
+        #cv2.destroyAllWindows()
         self.save_count_to_csv(output_file_path)
         logging.info(f"Total processing time: {time.time() - start_time} seconds")
 

@@ -6,23 +6,26 @@ from dotenv import load_dotenv
 from modules.hikvision_client import HikvisionClient
 from modules.yolov8_object_counter import YOLOv8_ObjectCounter
 
-# Load environment variables from .env file
+# Charger les variables d'environnement du fichier .env
 load_dotenv()
 
-# Fetch the camera details from environment variables
+# Récupérer les détails de la caméra à partir des variables d'environnement
 cam_ip = os.getenv('CAM_IP')
 cam_user = os.getenv('CAM_USER')
 cam_password = os.getenv('CAM_PASSWORD')
 cam_name = os.getenv('CAM_NAME')
 
-# Fetch the storage volume path from environment variables
+# Récupérer le chemin du volume de stockage à partir des variables d'environnement
 storage_volume_path = os.getenv('STORAGE_VOLUME_PATH')
 
-# Ensure the storage directory exists
+# Assurer que le répertoire de stockage existe
 if not os.path.exists(storage_volume_path):
     os.makedirs(storage_volume_path)
+    logging.info(f'Répertoire créé : {storage_volume_path}')
+else:
+    logging.info(f'Répertoire déjà existant : {storage_volume_path}')
 
-# Configure logging
+# Configurer la journalisation
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 if __name__ == '__main__':
@@ -31,5 +34,8 @@ if __name__ == '__main__':
 
     current_date = datetime.now().strftime('%Y-%m-%d')
     output_file_path = os.path.join(storage_volume_path, f'{cam_name}-{current_date}.csv')
+    
+    # Ajouter un message de débogage pour vérifier le chemin
+    logging.info(f'Chemin de sauvegarde du fichier CSV : {output_file_path}')
 
     counter.predict_video(cam, output_file_path, frame_skip=5, update_interval=2)
