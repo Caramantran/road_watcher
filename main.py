@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 from modules.hikvision_client import HikvisionClient
 from modules.yolov8_object_counter import YOLOv8_ObjectCounter
 
+# Configurer la journalisation
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
 # Charger les variables d'environnement du fichier .env
 load_dotenv()
 
@@ -25,9 +28,6 @@ if not os.path.exists(storage_volume_path):
 else:
     logging.info(f'Répertoire déjà existant : {storage_volume_path}')
 
-# Configurer la journalisation
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
 if __name__ == '__main__':
     cam = HikvisionClient(cam_ip, cam_user, cam_password)
     counter = YOLOv8_ObjectCounter(model_file='yolov8m.pt', conf=0.60, iou=0.60)
@@ -39,5 +39,3 @@ if __name__ == '__main__':
     logging.info(f'Chemin de sauvegarde du fichier CSV : {output_file_path}')
 
     counter.predict_video(cam, output_file_path, frame_skip=5, update_interval=2)
-
-    #zzertyui
