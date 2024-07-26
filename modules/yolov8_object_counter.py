@@ -7,7 +7,9 @@ from collections import defaultdict
 import logging
 from concurrent.futures import ThreadPoolExecutor
 import time
+import os 
 from modules.yolov8_object_detector import YOLOv8_ObjectDetector
+from modules.drive_upload import upload_to_drive  # Assurez-vous d'importer la fonction
 
 class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
     def __init__(self, model_file='yolov8m.pt', labels=None, classes=[0, 1, 2, 3, 5, 7], conf=0.60, iou=0.45, track_max_age=45, track_min_hits=15, track_iou_threshold=0.3):
@@ -104,9 +106,10 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
         logging.info(f"DataFrame:\n{df}")
         logging.info(f"Data written and saved to {output_file_path}")
 
-    def print_counts(self, total_count):
-        logging.info(f'Total count of detected objects: {len(total_count)}')
-        for hour, class_counts in self.class_counts.items():
-            logging.info(f'Hour: {hour}')
-            for cls, ids in class_counts.items():
-                logging.info(f'  Class {self.labels[cls]}: {len(ids)} objects')
+        # Upload to Google Drive
+        google_drive_folder_id = os.getenv('GOOGLE_DRIVE_FOLDER_ID')
+        if google_drive_folder_id:
+            upload_to_drive(output_file_path, google_drive_folder_id)
+            logging.info(f"Data uploaded to Google Drive: {output_file_path}")
+        else:
+            logging.warning("Google Drive folder ID not found. Skipping upload.")
