@@ -39,3 +39,5 @@ if __name__ == '__main__':
     logging.info(f'Chemin de sauvegarde du fichier CSV : {output_file_path}')
 
     counter.predict_video(cam, output_file_path, frame_skip=5, update_interval=2)
+
+    #zzertyui
