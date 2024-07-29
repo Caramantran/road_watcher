@@ -17,4 +17,14 @@ dependencies:
   - torchvision=0.15
   - torchaudio=2.0
   - cpuonly
+  - libjpeg-turbo
+  - libpng
   - pip
+  - pip:
+    - ultralytics
+    - hikvisionapi
+    - python-dotenv
+    - google-auth
+    - google-auth-oauthlib
+    - google-auth-httplib2
+    - google-api-python-client

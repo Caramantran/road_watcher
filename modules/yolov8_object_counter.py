@@ -19,7 +19,7 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
         self.track_iou_threshold = track_iou_threshold
         self.class_counts = defaultdict(lambda: defaultdict(set))
 
-    def predict_video(self, frame_provider, output_file_path, frame_skip=5, update_interval=10, verbose=True):
+    def predict_video(self, frame_provider, output_file_path, frame_skip=2, update_interval=2, verbose=True):
         frame_count = 0
         tracker = sort.Sort(max_age=self.track_max_age, min_hits=self.track_min_hits, iou_threshold=self.track_iou_threshold)
         totalCount = set()
@@ -66,18 +66,22 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
                     with ThreadPoolExecutor() as executor:
                         results, resultsTracker = executor.submit(process_frame, frame).result()
                         if results is None or resultsTracker is None:
+                            logging.info(f"No results for frame at {current_time}")
                             continue
 
                 if frame_count % (update_interval * 30) == 0:  # Assuming 30 FPS
+                    logging.info("Saving counts to CSV")
                     self.save_count_to_csv(output_file_path)
 
                 frame_count += 1
+                logging.info(f"Processed frame {frame_count} at {current_time}")
 
             except Exception as e:
                 logging.error(f"Error processing frame: {e}")
                 time.sleep(1)
                 continue
 
+        logging.info("Final save of counts to CSV")
         self.save_count_to_csv(output_file_path)
         logging.info(f"Total processing time: {time.time() - start_time} seconds")
 
@@ -88,7 +92,7 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
             for cls, ids in class_data.items():
                 rows.append({
                     "Date": hour.date().strftime('%Y-%m-%d'),
-                    "Time": hour.time().strftime('%H:%M'),
+                    "Time": hour.time().strftime('%H:%M:%S'),
                     "Class": self.labels[cls],
                     "Count": len(ids)
                 })
@@ -101,6 +105,9 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
         append_data_to_existing_file(output_file_path, rows)
         logging.info(f"Data written and saved to {output_file_path}")
 
+        # Print the new data to console for verification
+        print(pd.DataFrame(rows))
+
         # Upload to Google Drive
         google_drive_folder_id = os.getenv('GOOGLE_DRIVE_FOLDER_ID')
         if google_drive_folder_id:
@@ -108,3 +115,22 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
             logging.info(f"Data uploaded to Google Drive: {output_file_path}")
         else:
             logging.warning("Google Drive folder ID not found. Skipping upload.")
+
+def append_data_to_existing_file(existing_file_path, new_data):
+    # Load the existing data
+    if os.path.exists(existing_file_path):
+        existing_df = pd.read_csv(existing_file_path)
+    else:
+        existing_df = pd.DataFrame()
+
+    # Convert new data to DataFrame
+    new_df = pd.DataFrame(new_data)
+
+    # Remove duplicate rows
+    combined_df = pd.concat([existing_df, new_df]).drop_duplicates()
+
+    # Save the combined data back to the file
+    combined_df.to_csv(existing_file_path, index=False)
+
+    # Print the combined data to console for verification
+    print(combined_df)
