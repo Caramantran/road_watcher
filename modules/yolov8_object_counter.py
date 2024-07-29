@@ -7,9 +7,9 @@ from collections import defaultdict
 import logging
 from concurrent.futures import ThreadPoolExecutor
 import time
-import os 
+import os
 from modules.yolov8_object_detector import YOLOv8_ObjectDetector
-from modules.drive_upload import upload_to_drive  # Assurez-vous d'importer la fonction
+from modules.drive_upload import upload_to_drive, append_data_to_existing_file
 
 class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
     def __init__(self, model_file='yolov8m.pt', labels=None, classes=[0, 1, 2, 3, 5, 7], conf=0.60, iou=0.45, track_max_age=45, track_min_hits=15, track_iou_threshold=0.3):
@@ -87,7 +87,8 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
             hour_str = hour.strftime('%Y-%m-%d %H:%M')
             for cls, ids in class_data.items():
                 rows.append({
-                    "Timestamp": hour_str,
+                    "Date": hour.date().strftime('%Y-%m-%d'),
+                    "Time": hour.time().strftime('%H:%M'),
                     "Class": self.labels[cls],
                     "Count": len(ids)
                 })
@@ -96,14 +97,8 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
             logging.info("No data to save.")
             return
 
-        df = pd.DataFrame(rows)
-        if df.empty:
-            logging.info("DataFrame is empty. No data to save.")
-            return
-
-        df.to_csv(output_file_path, index=False)
-        logging.info(f"Rows: {rows}")
-        logging.info(f"DataFrame:\n{df}")
+        # Append the new data to the existing file
+        append_data_to_existing_file(output_file_path, rows)
         logging.info(f"Data written and saved to {output_file_path}")
 
         # Upload to Google Drive

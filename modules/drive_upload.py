@@ -1,31 +1,73 @@
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
+from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 import os
+import io
 import logging
+import pandas as pd
+
+def get_drive_service():
+    SCOPES = ['https://www.googleapis.com/auth/drive.file']
+    creds = service_account.Credentials.from_service_account_file('credentials.json', scopes=SCOPES)
+    return build('drive', 'v3', credentials=creds)
+
+def file_exists_on_drive(service, folder_id, file_name):
+    query = f"'{folder_id}' in parents and name='{file_name}' and trashed=false"
+    results = service.files().list(q=query, fields="files(id, name)").execute()
+    files = results.get('files', [])
+    if files:
+        return files[0]['id']
+    return None
+
+def download_file_from_drive(service, file_id, local_path):
+    request = service.files().get_media(fileId=file_id)
+    fh = io.FileIO(local_path, 'wb')
+    downloader = MediaIoBaseDownload(fh, request)
+    done = False
+    while not done:
+        status, done = downloader.next_chunk()
+        logging.info(f"Download {int(status.progress() * 100)}%.")
+    fh.close()
 
 def upload_to_drive(file_path, folder_id):
     try:
-        # Charger les identifiants du fichier 'credentials.json'
-        SCOPES = ['https://www.googleapis.com/auth/drive.file']
-        creds = service_account.Credentials.from_service_account_file('credentials.json', scopes=SCOPES)
-        service = build('drive', 'v3', credentials=creds)
-
-        # Obtenir le nom du fichier
+        service = get_drive_service()
         file_name = os.path.basename(file_path)
         logging.info(f'Téléchargement du fichier : {file_name}')
 
-        # Créer un objet de téléchargement de fichier média
-        media = MediaFileUpload(file_path, resumable=True)
-
-        # Définir les métadonnées pour le fichier
-        file_metadata = {
-            'name': file_name,
-            'parents': [folder_id]  # ID du dossier où vous voulez télécharger le fichier
-        }
-
-        # Télécharger le fichier
-        file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-        logging.info(f'File ID: {file.get("id")}')
+        # Check if file already exists
+        file_id = file_exists_on_drive(service, folder_id, file_name)
+        if file_id:
+            logging.info(f"File {file_name} exists on Google Drive. Updating it.")
+            media = MediaFileUpload(file_path, resumable=True)
+            updated_file = service.files().update(fileId=file_id, media_body=media).execute()
+            logging.info(f"Updated file ID: {updated_file.get('id')}")
+        else:
+            logging.info(f"File {file_name} does not exist on Google Drive. Creating a new one.")
+            media = MediaFileUpload(file_path, resumable=True)
+            file_metadata = {
+                'name': file_name,
+                'parents': [folder_id]
+            }
+            created_file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+            logging.info(f'File ID: {created_file.get("id")}')
     except Exception as e:
         logging.error(f'Erreur lors du téléchargement sur Google Drive : {e}')
+        if hasattr(e, 'args') and len(e.args) > 0:
+            logging.error(f'Détails de l\'erreur : {e.args[0]}')
+
+def append_data_to_existing_file(existing_file_path, new_data):
+    # Load the existing data
+    if os.path.exists(existing_file_path):
+        existing_df = pd.read_csv(existing_file_path)
+    else:
+        existing_df = pd.DataFrame()
+
+    # Convert new data to DataFrame
+    new_df = pd.DataFrame(new_data)
+
+    # Remove duplicate rows
+    combined_df = pd.concat([existing_df, new_df]).drop_duplicates()
+
+    # Save the combined data back to the file
+    combined_df.to_csv(existing_file_path, index=False)
