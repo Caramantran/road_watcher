@@ -59,15 +59,25 @@ def upload_to_drive(file_path, folder_id):
 def append_data_to_existing_file(existing_file_path, new_data):
     # Load the existing data
     if os.path.exists(existing_file_path):
-        existing_df = pd.read_csv(existing_file_path)
+        existing_df = pd.read_excel(existing_file_path, sheet_name=None)
     else:
-        existing_df = pd.DataFrame()
+        existing_df = {}
 
     # Convert new data to DataFrame
     new_df = pd.DataFrame(new_data)
 
-    # Remove duplicate rows
-    combined_df = pd.concat([existing_df, new_df]).drop_duplicates()
+    # Get current date
+    current_date = datetime.now().strftime('%Y-%m-%d')
+
+    if current_date in existing_df:
+        existing_df[current_date] = pd.concat([existing_df[current_date], new_df]).drop_duplicates()
+    else:
+        existing_df[current_date] = new_df
 
     # Save the combined data back to the file
-    combined_df.to_csv(existing_file_path, index=False)
+    with pd.ExcelWriter(existing_file_path, engine='openpyxl') as writer:
+        for sheet_name, df in existing_df.items():
+            df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+    # Print the combined data to console for verification
+    print(new_df)

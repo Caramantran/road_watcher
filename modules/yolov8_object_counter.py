@@ -19,7 +19,7 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
         self.track_iou_threshold = track_iou_threshold
         self.class_counts = defaultdict(lambda: defaultdict(set))
 
-    def predict_video(self, frame_provider, output_file_path, frame_skip=2, update_interval=2, verbose=True):
+    def predict_video(self, frame_provider, output_file_path, frame_skip=5, update_interval=10, verbose=True):
         frame_count = 0
         tracker = sort.Sort(max_age=self.track_max_age, min_hits=self.track_min_hits, iou_threshold=self.track_iou_threshold)
         totalCount = set()
@@ -30,6 +30,7 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
             frame_resized = cv2.resize(frame, (640, 360))  # Resize frame for faster processing
             results = self.predict_img(frame_resized, verbose=False)
             if results is None:
+                logging.info("No results from YOLO model")
                 return None, None
 
             detections = np.empty((0, 5))
@@ -39,16 +40,21 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
                 x1, y1, x2, y2 = np.squeeze(box.xyxy.numpy()).astype(int)
                 currentArray = np.array([x1, y1, x2, y2, score])
                 detections = np.vstack((detections, currentArray))
+                logging.info(f"Detection: Class {class_id}, Score {score}, Box ({x1}, {y1}, {x2}, {y2})")
 
             resultsTracker = tracker.update(detections)
+            logging.info(f"Tracked objects: {len(resultsTracker)}")
+
+            current_time = datetime.now()
+            hour = current_time.replace(second=0, microsecond=0)
+
             for result in resultsTracker:
                 x1, y1, x2, y2, id = result
                 x1, y1, x2, y2, id = int(x1), int(y1), int(x2), int(y2), int(id)
+                logging.info(f"Tracking: ID {id}, Box ({x1}, {y1}, {x2}, {y2})")
                 if id not in totalCount:
                     totalCount.add(id)
-                    for box in results.boxes:
-                        if int(box.cls.item()) == class_id:
-                            self.class_counts[hour][int(box.cls.item())].add(id)
+                    self.class_counts[hour][class_id].add(id)
             return results, resultsTracker
 
         while True:
@@ -59,14 +65,10 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
                     time.sleep(1)
                     continue
 
-                current_time = datetime.now()
-                hour = current_time.replace(second=0, microsecond=0)
-
                 if frame_count % frame_skip == 0:
                     with ThreadPoolExecutor() as executor:
                         results, resultsTracker = executor.submit(process_frame, frame).result()
                         if results is None or resultsTracker is None:
-                            logging.info(f"No results for frame at {current_time}")
                             continue
 
                 if frame_count % (update_interval * 30) == 0:  # Assuming 30 FPS
@@ -74,7 +76,6 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
                     self.save_count_to_csv(output_file_path)
 
                 frame_count += 1
-                logging.info(f"Processed frame {frame_count} at {current_time}")
 
             except Exception as e:
                 logging.error(f"Error processing frame: {e}")
@@ -92,7 +93,7 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
             for cls, ids in class_data.items():
                 rows.append({
                     "Date": hour.date().strftime('%Y-%m-%d'),
-                    "Time": hour.time().strftime('%H:%M:%S'),
+                    "Time": hour.time().strftime('%H:%M'),
                     "Class": self.labels[cls],
                     "Count": len(ids)
                 })
@@ -119,18 +120,25 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
 def append_data_to_existing_file(existing_file_path, new_data):
     # Load the existing data
     if os.path.exists(existing_file_path):
-        existing_df = pd.read_csv(existing_file_path)
+        existing_df = pd.read_excel(existing_file_path, sheet_name=None)
     else:
-        existing_df = pd.DataFrame()
+        existing_df = {}
 
     # Convert new data to DataFrame
     new_df = pd.DataFrame(new_data)
 
-    # Remove duplicate rows
-    combined_df = pd.concat([existing_df, new_df]).drop_duplicates()
+    # Get current date
+    current_date = datetime.now().strftime('%Y-%m-%d')
+
+    if current_date in existing_df:
+        existing_df[current_date] = pd.concat([existing_df[current_date], new_df]).drop_duplicates()
+    else:
+        existing_df[current_date] = new_df
 
     # Save the combined data back to the file
-    combined_df.to_csv(existing_file_path, index=False)
+    with pd.ExcelWriter(existing_file_path, engine='openpyxl') as writer:
+        for sheet_name, df in existing_df.items():
+            df.to_excel(writer, sheet_name=sheet_name, index=False)
 
     # Print the combined data to console for verification
-    print(combined_df)
+    print(new_df)
