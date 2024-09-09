@@ -1,5 +1,6 @@
 import numpy as np
 from ultralytics import YOLO
+import logging
 
 class YOLOv8_ObjectDetector:
     def __init__(self, model_file='yolov8m.pt', labels=None, classes=None, conf=0.25, iou=0.45):
@@ -15,8 +16,17 @@ class YOLOv8_ObjectDetector:
         else:
             self.labels = labels
 
+        logging.info(f"YOLOv8 model '{self.model_name}' initialized with confidence threshold {self.conf} and IOU threshold {self.iou}.")
+
     def predict_img(self, img, verbose=True):
-        results = self.model(img, classes=self.classes, conf=self.conf, iou=self.iou, verbose=verbose)
-        self.orig_img = img
-        self.results = results[0]
-        return results[0]
+        logging.info("Starting image prediction...")
+        try:
+            results = self.model(img, classes=self.classes, conf=self.conf, iou=self.iou, verbose=verbose)
+            self.orig_img = img
+            self.results = results[0]
+            logging.info("Image prediction completed successfully.")
+            return results[0]
+        except Exception as e:
+            logging.error(f"Error during image prediction: {e}")
+            return None
+
