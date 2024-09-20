@@ -4,9 +4,16 @@ FROM continuumio/anaconda3
 # Set the working directory inside the container
 WORKDIR /usr/src/app
 
-# Install system dependencies for OpenCV, OpenGL, and UVC support
+# Install system dependencies for OpenCV, OpenGL, UVC support, and tzdata for timezone management
 RUN apt-get update && apt-get install -y \
-    python3-opencv
+    python3-opencv \
+    tzdata
+
+# Set the timezone
+ENV TZ=Africa/Casablanca
+
+# Link timezone configuration
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Copy the environment.yml file into the container
 COPY environment.yml .
@@ -31,3 +38,6 @@ RUN chmod -R 777 /usr/src/app
 
 # Ensure the conda environment is active when running the application
 ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "yolo_env", "python", "main.py"]
+
+
+
