@@ -53,7 +53,7 @@ def get_or_create_folder(service, folder_name, parent_folder_id):
 def upload_to_drive(file_path, folder_id):
     try:
         service = get_drive_service()
-        file_name = os.path.basename(file_path)
+        file_name = os.path.splitext(os.path.basename(file_path))[0]
         city = os.getenv('CITY')
         city_folder_id = get_or_create_folder(service, city, folder_id)
 

@@ -3,7 +3,7 @@ from ultralytics import YOLO
 import logging
 
 class YOLOv8_ObjectDetector:
-    def __init__(self, model_file='yolov8m.pt', labels=None, classes=None, conf=0.25, iou=0.45):
+    def __init__(self, model_file='yolov8l.pt', labels=None, classes=None, conf=0.45, iou=0.5):
         self.classes = classes
         self.conf = conf
         self.iou = iou
