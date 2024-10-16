@@ -1,4 +1,3 @@
-#version 2minutes
 import numpy as np
 import cv2
 import modules.sort as sort
@@ -22,7 +21,7 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
             5: 'bus',
             7: 'truck'
         }
-        self.coefficients = {  # Coefficients based on class
+        self.coefficients = {  
             'person': 1,
             'bicycle': 1,
             'car': 2.5,
@@ -35,16 +34,20 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
         self.track_min_hits = track_min_hits
         self.track_iou_threshold = track_iou_threshold
 
-        # Initialize counted IDs and a dictionary to keep counts per class
-        self.counted_ids = defaultdict(set)  # To track unique IDs within each 2-minute interval
+        
+        self.counted_ids = defaultdict(set) 
         self.class_counts = defaultdict(int)
 
-    def predict_video(self, frame_provider, output_file_path, frame_interval=0.5, verbose=True):
-        tracker = sort.Sort(
+    def reset_tracker(self):
+        """Reset the SORT tracker after each upload to avoid ID conflicts between intervals."""
+        self.tracker = sort.Sort(
             max_age=self.track_max_age,
             min_hits=self.track_min_hits,
             iou_threshold=self.track_iou_threshold
         )
+
+    def predict_video(self, frame_provider, output_file_path, frame_interval=0.5, verbose=True):
+        self.reset_tracker()  
         logging.info("Starting video prediction...")
 
         last_upload_time = time.time()
@@ -57,7 +60,7 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
                 return None, None
 
             detections = np.empty((0, 6))
-            motorbike_detected_but_not_tracked = False 
+            motorbike_detected_but_not_tracked = False
             for box in results.boxes:
                 score = box.conf.item()
                 class_id = int(box.cls.item())
@@ -72,15 +75,15 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
                 if class_name == 'motorbike':
                     motorbike_detected_but_not_tracked = True
 
-            tracked_objects = tracker.update(detections)
+            tracked_objects = self.tracker.update(detections)
             logging.info(f"Tracked objects: {len(tracked_objects)}")
 
-            # Get the current time rounded down to the nearest 2-minute interval
+        
             now = datetime.now()
             rounded_minute = (now.minute // 2) * 2
             current_time_str = now.replace(minute=rounded_minute, second=0, microsecond=0).strftime("%H:%M")
 
-            # Process tracked objects
+        
             motorbike_tracked = False
             for trk in tracked_objects:
                 x1, y1, x2, y2, track_id, class_id = trk.astype(int)
@@ -88,7 +91,7 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
                 if class_name == 'motorbike':
                     motorbike_tracked = True
 
-                # Count unique objects for the current time interval
+                
                 if track_id not in self.counted_ids[current_time_str]:
                     self.counted_ids[current_time_str].add(track_id)
                     self.class_counts[class_name] += 1
@@ -96,7 +99,6 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
 
             if motorbike_detected_but_not_tracked and not motorbike_tracked:
                 self.class_counts['motorbike'] += 1
-                logging.info("Motorbike detected but not tracked. Count incremented manually.")        
 
             return results, tracked_objects
 
@@ -114,11 +116,15 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
 
                     process_frame(frame)
 
-                # Save and upload data every two minutes
-                if current_time - last_upload_time >= 120:  # Two minutes
+                
+                if current_time - last_upload_time >= 120:  
                     logging.info("Two minutes passed. Saving counts to Excel and uploading to Google Drive.")
                     self.save_count_to_csv(output_file_path)
                     last_upload_time = current_time
+
+                
+                    self.reset_tracker()  
+                    self.counted_ids.clear()  
 
             except Exception as e:
                 logging.error(f"Error processing frame: {e}")
@@ -141,7 +147,7 @@ class YOLOv8_ObjectCounter(YOLOv8_ObjectDetector):
         else:
             logging.warning("Google Drive folder ID not found. Skipping upload.")
 
-        # Clear counted IDs and counts after saving to avoid double-counting
+        
         self.counted_ids.clear()
         self.class_counts.clear()
 
