@@ -30,4 +30,3 @@ dependencies:
     - google-api-python-client
     - openpyxl
     - xlsxwriter
-  
